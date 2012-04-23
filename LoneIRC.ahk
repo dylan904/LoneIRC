@@ -1,4 +1,4 @@
-#SingleInstance Force
+#SingleInstance Off
 
 ChatStartup:
 Loop, Parse, A_AhkVersion, `.
@@ -232,7 +232,6 @@ Return
  
 SendText:
 While (RecMes){
-	MsgBox waiting...
     Sleep 30
 }
 SendMes := True
@@ -262,6 +261,15 @@ Else If (SubStr(TextBox, 1, 5) = "/nick"){
 	GuiControl, 80: , TextBox
 	Return
 }
+Else If (SubStr(TextBox, 1, 3) = "/me"){
+	ACTION(Channel%CurrentTabNum%, SubStr(TextBox, 5))
+	RichEdit_SetSel(Chat%CurrentTabNum%, -1,-1)
+	RichEdit_SetText(Chat%CurrentTabNum%, "  *  " WantNick "  " SubStr(TextBox, 5) "`r`n", "SELECTION", -1)
+	SendMes := False
+	GuiControl, 80: , TextBox
+	Return
+}
+
 MSG(Channel%CurrentTabNum%, TextBox)
 RichEdit_SetSel(%CurrentUserTab%, -1,-1)
 RichEdit_SetText(%CurrentUserTab%, "[" A_Hour ":" A_Min "] <" WantNick "> " TextBox "`r`n", "SELECTION", -1)
@@ -319,19 +327,18 @@ Message_Recieved(Message)
 		RepeatWho:
 		RichEdit_SetSel(Chat%QNum%, -1,-1)
 		CurrTextLen := RichEdit_GetTextLength(Chat%QNum%)
-		
 		If (Message2 = 311 And !Wait311)
 			RichEdit_SetText(Chat%QNum%, "==  " Message4 " [" Message6 "]`r`n", "SELECTION", -1), Wait311 := True
 		Else If (Message2 = 311 And Wait311)
 			RichEdit_SetText(Chat%QNum%, "==    RealName : " SubStr(message8, 2) " - " Message10 "`r`n", "SELECTION", -1), Wait311 := ""
-		Else If (Message2 = 314)
-			RichEdit_SetText(Chat%QNum%, "==    Account  : " Message4 "`r`n", "SELECTION", -1)
-		Else If (Message2 = 319)
-			RichEdit_SetText(Chat%QNum%, "==    Channels   : " SubStr(Message, Instr(Message, Message5) + 1) "`r`n", "SELECTION", -1)
 		Else If (Message2 = 312)
 			RichEdit_SetText(Chat%QNum%, "==    Server        : " Message5 " - [" SubStr(Message, Instr(Message, Message6) + 1) "]`r`n", "SELECTION", -1)
+		Else If (Message2 = 314)
+			RichEdit_SetText(Chat%QNum%, "==    Account  : " Message4 "`r`n", "SELECTION", -1)
 		Else If (Message2 = 318)
-			RichEdit_SetText(Chat%QNum%, "==  End of WHOIS`r`n", "SELECTION", -1), AwaitQuery := False 
+			RichEdit_SetText(Chat%QNum%, "==  End of WHOIS`r`n", "SELECTION", -1), AwaitQuery := False 	
+		Else If (Message2 = 319)
+			RichEdit_SetText(Chat%QNum%, "==    Channels   : " SubStr(Message, Instr(Message, Message5) + 1) "`r`n", "SELECTION", -1)
 		Else If (Message2 = 369)
 			RichEdit_SetText(Chat%QNum%, "==  End of WHOWAS`r`n", "SELECTION", -1), AwaitQuery := False, Wait369 := ""
 		Else If (Message2 = 401)
@@ -342,16 +349,15 @@ Message_Recieved(Message)
 			RichEdit_SetText(Chat%QNum%, "==  NickName Is Already In Use: " Message4 "`r`n", "SELECTION", -1)
 		Else If (Message2 = "NICK" And SubStr(Message1, 2, Instr(Message1, "!") - 2) = WantNick) {
 			WantNick := SubStr(Message3, 2), NickName := WantNick, RichEdit_SetText(Chat%QNum%, "==  " SubStr(Message1, 2, Instr(Message1, "!") - 2) " has changed nick to " WantNick "`r`n", "SELECTION", -1)
+			IniWrite, %NickName%, IRC.ini, User, Name
 			Gui, 80: Default
 			Loop, %UserTabCount% {
 				Gui, 80: ListView, OnlineUsers%A_Index%
 				NumOfChatters := LV_GetCount(), ChatNum := A_Index
 				Loop, %NumOfChatters% {
 					LV_GetText(A, A_Index)
-					If (A = SubStr(Message1, 2, Instr(Message1, "!") - 2)) {
-						LV_Delete(A_Index)
-						LV_Add("", WantNick)
-					}
+					If (A = SubStr(Message1, 2, Instr(Message1, "!") - 2))
+						LV_Delete(A_Index), LV_Add("", WantNick)
 				}
 			}
 		}
@@ -490,7 +496,7 @@ Message_Recieved(Message)
         If (Who = NickName){				
 			Loop, %UserTabCount% {
 				GuiControlGet, BT,, OnlineTab%A_Index%
-				If InStr(BT, "#")
+				If InStr(BT, "#") {
 					RichEdit_SetSel(Chat%A_Index%, -1,-1)
 					CurrTextLen := RichEdit_GetTextLength(Chat%A_Index%)
 					RichEdit_SetText(Chat%A_Index%, "==  You have left!`r`n`r`n", "SELECTION", -1)
@@ -498,20 +504,26 @@ Message_Recieved(Message)
 					RichEdit_SetCharFormat(Chat%A_Index%, "Segoe", "s9", "0xFF0000", "", "Selection")
 					RichEdit_SetSel(Chat%A_Index%, -1, -1)
 					RichEdit_SetCharFormat(Chat%A_Index%, "Segoe", "s9", "0x000000", "", "Selection")
+				}
 			}
 		}
         Else {
 			Gui, 80: Default
 			Loop, %UserTabCount% {
 				Gui, 80: ListView, OnlineUsers%A_Index%
-				LV_Delete(Who)
-				RichEdit_SetSel(Chat%A_Index%, -1,-1)
-				CurrTextLen := RichEdit_GetTextLength(Chat%A_Index%)
-				RichEdit_SetText(Chat%A_Index%, "==  " Who " has left!`r`n", "SELECTION", -1)
-				RichEdit_SetSel(Chat%A_Index%, CurrTextLen, CurrTextLen + 2)
-				RichEdit_SetCharFormat(Chat%A_Index%, "Segoe", "s9", "0xFF0000", "", "Selection")
-				RichEdit_SetSel(Chat%A_Index%, -1, -1)
-				RichEdit_SetCharFormat(Chat%A_Index%, "Segoe", "s9", "0x000000", "", "Selection")
+				NumOfChatters := LV_GetCount(), ChatNum := A_Index
+				Loop, %NumOfChatters% {
+					LV_GetText(A, A_Index)
+					If (A = Who)
+						LV_Delete(A_Index)
+				}
+				RichEdit_SetSel(Chat%ChatNum%, -1,-1)
+				CurrTextLen := RichEdit_GetTextLength(Chat%ChatNum%)
+				RichEdit_SetText(Chat%ChatNum%, "==  " Who " has left!`r`n", "SELECTION", -1)
+				RichEdit_SetSel(Chat%ChatNum%, CurrTextLen, CurrTextLen + 2)
+				RichEdit_SetCharFormat(Chat%ChatNum%, "Segoe", "s9", "0xFF0000", "", "Selection")
+				RichEdit_SetSel(Chat%ChatNum%, -1, -1)
+				RichEdit_SetCharFormat(Chat%ChatNum%, "Segoe", "s9", "0x000000", "", "Selection")
 			}
 			Gui, 1: Default				
 		}
@@ -590,7 +602,10 @@ Message_Recieved(Message)
 			}
 			Else{
 				RichEdit_SetSel(Chat%CurrentTabNum%, -1,-1)
-				RichEdit_SetText(Chat%CurrentTabNum%, "[" A_Hour ":" A_Min "] <" Who "> " Message "`r`n", "SELECTION", -1)
+				If (SubStr(Message, 1, InStr(Message, A_Space) -1) = Chr(1) "ACTION")
+					RichEdit_SetText(Chat%CurrentTabNum%, "  *  " Who "  " SubStr(Message, Instr(Message, A_Space)+1, Instr(Message, Chr(1), False, 1, 2)-Instr(Message, A_Space)-1) "`r`n", "SELECTION", -1)
+				Else
+					RichEdit_SetText(Chat%CurrentTabNum%, "[" A_Hour ":" A_Min "] <" Who "> " Message "`r`n", "SELECTION", -1)
 			}
 		}
 		SendMessage, 0x115, 7, 0,, % "ahk_id " Chat%DirNum%
