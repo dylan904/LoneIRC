@@ -231,9 +231,11 @@ Loop, %ChanCounter%
 Return
  
 SendText:
-While (RecMes = 1)
+While (RecMes){
+	MsgBox waiting...
     Sleep 30
-SendMes := 1
+}
+SendMes := True
 Gui, 80: Default
 GuiControlGet, TextBox
 Gui, 1: Default
@@ -242,14 +244,23 @@ If (Trim(TextBox) = ""){
     Return
 }
 Else If (SubStr(TextBox, 1, 5) = "/join"){
-	ChanAndOne := ChanCounter + 1, Channel%ChanAndOne% := (SubStr(TextBox, 7, 1) = "#") ? SubStr(TextBox, 7) : "#" SubStr(TextBox, 7), ChosenUser := Channel%ChanAndOne%, JoinChan := 1, SendMes := 0
+	ChanAndOne := ChanCounter + 1, Channel%ChanAndOne% := (SubStr(TextBox, 7, 1) = "#") ? SubStr(TextBox, 7) : "#" SubStr(TextBox, 7), ChosenUser := Channel%ChanAndOne%
 	Join(Channel%ChanAndOne%)
+	JoinChan := 1, SendMes := False
 	GuiControl, 80: , TextBox
-	return
+	Return
 }
 Else If (SubStr(TextBox, 1, 6) = "/whois") Or (SubStr(TextBox, 1, 4) = "/who") Or (SubStr(TextBox, 1, 7) = "/whowas"){
-	QUERY(Trim(SubStr(TextBox, InStr(TextBox, A_Space)+1)), Trim(SubStr(TextBox, 2, Instr(TextBox, A_Space)-1)))
-	AwaitQuery := true
+	SendRaw(SubStr(TextBox, 2))
+	AwaitQuery := True, SendMes := False, QNum := CurrentTabNum
+	GuiControl, 80: , TextBox
+	Return
+}
+Else If (SubStr(TextBox, 1, 5) = "/nick"){
+	SendRaw(SubStr(TextBox, 2))
+	AwaitQuery := True, SendMes := False, QNum := CurrentTabNum
+	GuiControl, 80: , TextBox
+	Return
 }
 MSG(Channel%CurrentTabNum%, TextBox)
 RichEdit_SetSel(%CurrentUserTab%, -1,-1)
@@ -259,7 +270,7 @@ If (ScrollPos != "0/0")
 	RichEdit_ShowScrollBar(Chat%CurrentTabNum%, "V", True)
 SendMessage, 0x115, 7, 0,, % "ahk_id " %CurrentUserTab%   ;WM_VSCROLL
 GuiControl, 80: , TextBox
-SendMes := 0
+SendMes := False
 Return
  
 GetTextSize(pStr, pSize=8, pFont="", pHeight=false) {
@@ -295,27 +306,72 @@ Message_Recieved(Message)
 	Local Who
     While (SendMes = 1)
         Sleep 30
-    RecMes := 1, ChanAndOne := ChanCounter + 1
+    RecMes := True, ChanAndOne := ChanCounter + 1
     If InStr(Message, "`r`n"){
 		Loop, PARSE, Message, `n, `r
             Message_Recieved(A_LoopField)
+		RecMes := False
         Return
     }
     StringSplit, Message, Message, %A_Space%
     who := SubStr(Message1, 2, InStr(Message1, "!") - 2) 
-	if (awaitquery)
-		MsgBox % message
-    If(Message1 = "PING")
+	If (AwaitQuery) {
+		RepeatWho:
+		RichEdit_SetSel(Chat%QNum%, -1,-1)
+		CurrTextLen := RichEdit_GetTextLength(Chat%QNum%)
+		
+		If (Message2 = 311 And !Wait311)
+			RichEdit_SetText(Chat%QNum%, "==  " Message4 " [" Message6 "]`r`n", "SELECTION", -1), Wait311 := True
+		Else If (Message2 = 311 And Wait311)
+			RichEdit_SetText(Chat%QNum%, "==    RealName : " SubStr(message8, 2) " - " Message10 "`r`n", "SELECTION", -1), Wait311 := ""
+		Else If (Message2 = 314)
+			RichEdit_SetText(Chat%QNum%, "==    Account  : " Message4 "`r`n", "SELECTION", -1)
+		Else If (Message2 = 319)
+			RichEdit_SetText(Chat%QNum%, "==    Channels   : " SubStr(Message, Instr(Message, Message5) + 1) "`r`n", "SELECTION", -1)
+		Else If (Message2 = 312)
+			RichEdit_SetText(Chat%QNum%, "==    Server        : " Message5 " - [" SubStr(Message, Instr(Message, Message6) + 1) "]`r`n", "SELECTION", -1)
+		Else If (Message2 = 318)
+			RichEdit_SetText(Chat%QNum%, "==  End of WHOIS`r`n", "SELECTION", -1), AwaitQuery := False 
+		Else If (Message2 = 369)
+			RichEdit_SetText(Chat%QNum%, "==  End of WHOWAS`r`n", "SELECTION", -1), AwaitQuery := False, Wait369 := ""
+		Else If (Message2 = 401)
+			RichEdit_SetText(Chat%QNum%, "==  No Such Nick/Channel: " Message4 "`r`n", "SELECTION", -1)
+		Else If (Message2 = 406)
+			RichEdit_SetText(Chat%QNum%, "==  No Such NickName: " Message4 "`r`n", "SELECTION", -1), Wait369 := True, Message2 := 369
+		Else If (Message2 = 433)
+			RichEdit_SetText(Chat%QNum%, "==  NickName Is Already In Use: " Message4 "`r`n", "SELECTION", -1)
+		Else If (Message2 = "NICK" And SubStr(Message1, 2, Instr(Message1, "!") - 2) = WantNick) {
+			WantNick := SubStr(Message3, 2), NickName := WantNick, RichEdit_SetText(Chat%QNum%, "==  " SubStr(Message1, 2, Instr(Message1, "!") - 2) " has changed nick to " WantNick "`r`n", "SELECTION", -1)
+			Gui, 80: Default
+			Loop, %UserTabCount% {
+				Gui, 80: ListView, OnlineUsers%A_Index%
+				NumOfChatters := LV_GetCount(), ChatNum := A_Index
+				Loop, %NumOfChatters% {
+					LV_GetText(A, A_Index)
+					If (A = SubStr(Message1, 2, Instr(Message1, "!") - 2)) {
+						LV_Delete(A_Index)
+						LV_Add("", WantNick)
+					}
+				}
+			}
+		}
+		RichEdit_SetSel(Chat%QNum%, CurrTextLen, CurrTextLen + 2)
+		RichEdit_SetCharFormat(Chat%QNum%, "Segoe", "s9", "0xFF0000", "", "Selection")
+		RichEdit_SetSel(Chat%QNum%, -1, -1)
+		RichEdit_SetCharFormat(Chat%QNum%, "Segoe", "s9", "0x000000", "", "Selection")
+		RichEdit_SetSel(Chat%QNum%, CurrTextLen , -1)
+		If (Wait311) or (Wait369)
+			GoTo RepeatWho
+	}
+    Else If(Message1 = "PING")
         SENDRAW("PONG " Message2)
     Else If(Message2 = "PING")
         SENDRAW("PONG " Message3)
-    Else If(Message2 = 001){
+    Else If(Message2 = 001) {
 		If (WantNick != Message3) And InStr(Message3, WantNick) {
 			WantNick := Message3, NickName := Message3
 			WinSetTitle, LoneIRC,, LoneIRC - %WantNick%
 		}
-		Else 
-			Return
 	}
     Else If (Message2 = 433){
 		SENDRAW("NICK " Message4 "_")
@@ -348,8 +404,6 @@ Message_Recieved(Message)
 			}
 			ROMF("Message_Recieved")
 		}
-		Else 
-			Return
     }
     Else If (Message2 = "JOIN"){
 		ChosenUser := (SubStr(Message3, 2) = "") ? Channel%CurrentTabNum% : Message3, SelListUser := Message3
@@ -384,7 +438,6 @@ Message_Recieved(Message)
 			}
 		} 
 		Gui, 1: Default
-		Return
     }
     Else If (Message2 = 353) Or (CollectingData) {
 		If (Message2 = 366){
@@ -418,8 +471,7 @@ Message_Recieved(Message)
 					Gui, 1: Default
 				}
 			}
-			RecMes := 0
-			Return
+	
 		}
 		Else {
 			CollectingData := True, i := 6
@@ -490,8 +542,10 @@ Message_Recieved(Message)
 		}
 		Gui, 1: Default
 	}
-	Else If (SubStr(Message1,2) = ServerStatus Or Who = "NickServ" Or Who = "ChanServ" Or SubStr(Message1, 1, 1) != ":" Or Message2 = "MODE" Or InStr(ServerStatus, SubStr(Message1,2))) 
+	Else If (SubStr(Message1,2) = ServerStatus Or Who = "NickServ" Or Who = "ChanServ" Or SubStr(Message1, 1, 1) != ":" Or Message2 = "MODE" Or InStr(ServerStatus, SubStr(Message1,2))) {
+		RecMes := False
 		return
+	}
 	Else {
 		Message := ChatDecrypt(Message)
 		Gui, 80: Default
@@ -543,8 +597,8 @@ Message_Recieved(Message)
 		ScrollPos := RichEdit_ScrollPos(Chat%DirNum%)
 		If (ScrollPos != "0/0")
 			RichEdit_ShowScrollBar(Chat%DirNum%, "V", True)
-		RecMes := 0
 	}
+	RecMes := False
 }
 
 onlineclick:
