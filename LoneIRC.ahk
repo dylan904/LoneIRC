@@ -1,4 +1,4 @@
-#SingleInstance Off
+#SingleInstance Force
 
 ChatStartup:
 Loop, Parse, A_AhkVersion, `.
@@ -17,13 +17,13 @@ If !FileExist("favicon (1).ico")
    UrlDownloadToFile, http://www.autohotkey.net/~dylan904/favicon (1).ico, favicon (1).ico
 If !FileExist("grad.png")
    UrlDownloadToFile, http://www.autohotkey.net/~dylan904/grad.png, grad.png
-pvtC := "PRIVMSG", ChanCounter := 0, Version_Number := 1.112
+ChanCounter := 0, Version_Number := 1.115
 Check_ForUpdate(1)
 
 Gui, 80: +LastFound
-Gui, 80: Add, Edit, x10 y435 w550 vTextBox gCancelTabbing -WantReturn
-Gui, 80: Add, Button, x573 y434 w30 w20 gSendText vSender +Default, Send
-Gui, 80: Add, Button, +BackgroundTrans x620 yp vCloseConvo gCloseConvo, Close Tab
+Gui, 80: Add, Edit, x10 y475 w630 vTextBox gCancelTabbing -WantReturn
+Gui, 80: Add, Button, x643 y474 w30 w20 gSendText vSender +Default, Send
+Gui, 80: Add, Button, +BackgroundTrans x700 yp vCloseConvo gCloseConvo, Close Tab
 
 IniRead, ReadDefName, IRC.ini, User, Name
 IniRead, ReadDefChan, IRC.ini, User, Channel
@@ -38,12 +38,7 @@ Gui, 81: Add, Button, +BackgroundTrans +Default xm h40 xm y+20 w90 -Wrap hwndhBt
   ILButton(hbtn, "favicon (1).ico", 32, 32, "left")
 81GuiShow:
 Gui, 81: Show, w280 h190
-If (ReadDefName != "" And ReadDefName != "ERROR"){
-	NickName := ReadDefName
-	WAOY := 1
-	CONNECT(NickName, NickName, NickName, "", "irc.freenode.net", 6667)
-	ROMF("Message_Recieved")
-}
+
 Return
 81GuiClose:
 ExitApp
@@ -86,13 +81,13 @@ Gui, 80: Add, Button, yp xp+70 vonlinetab6 gButton6 Hidden,
 Gui, 80: Add, Button, yp xp+70 vonlinetab7 gButton7 Hidden, 
 Gui, 80: +LastFound
 hwndRich := WinExist()
-Chat1 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border ReadOnly")
-Chat2 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border Hidden ReadOnly")
-Chat3 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border Hidden ReadOnly")
-Chat4 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border Hidden ReadOnly")
-Chat5 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border Hidden ReadOnly")
-Chat6 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border Hidden ReadOnly")
-Chat7 := RichEdit_Add(hwndRich, 10, 27, 600, 400, "MultiLine Border Hidden ReadOnly")
+Chat1 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border ReadOnly")
+Chat2 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border Hidden ReadOnly")
+Chat3 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border Hidden ReadOnly")
+Chat4 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border Hidden ReadOnly")
+Chat5 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border Hidden ReadOnly")
+Chat6 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border Hidden ReadOnly")
+Chat7 := RichEdit_Add(hwndRich, 10, 27, 680, 440, "MultiLine Border Hidden ReadOnly")
 Loop, 7 {
 	RichEdit_SetCharFormat(Chat%A_Index%, "Segoe", "s9",,, "All")
 	RichEdit_AutoUrlDetect(Chat%A_Index%, True)
@@ -107,13 +102,13 @@ Gui, 80: Add, Picture, +AltSubmit +backgroundtrans Hidden x30 yp vredbutton4 gbu
 Gui, 80: Add, Picture, +AltSubmit +backgroundtrans Hidden x30 yp vredbutton5 gbutton5, redbutton.ico
 Gui, 80: Add, Picture, +AltSubmit +backgroundtrans Hidden x30 yp vredbutton6 gbutton6, redbutton.ico
 Gui, 80: Add, Picture, +AltSubmit +backgroundtrans Hidden x30 yp vredbutton7 gbutton7, redbutton.ico
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers1 hwndhwndListView4, % "  Online Users"
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers2 hwndhwndListView5 Hidden, % "  Online Users"
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers3 hwndhwndListView6 Hidden, % "  Online Users"
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers4 hwndhwndListView7 Hidden, % "  Online Users"
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers5 hwndhwndListView8 Hidden, % "  Online Users"
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers6 hwndhwndListView9 Hidden, % "  Online Users"
-Gui, 80: Add, ListView, y27 x620 w140 h400 Sort gOnlineClick vOnlineUsers7 hwndhwndListView10 Hidden, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers1 hwndhwndListView4, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers2 hwndhwndListView5 Hidden, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers3 hwndhwndListView6 Hidden, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers4 hwndhwndListView7 Hidden, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers5 hwndhwndListView8 Hidden, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers6 hwndhwndListView9 Hidden, % "  Online Users"
+Gui, 80: Add, ListView, y27 x700 w140 h440 Sort NoSortHdr gOnlineClick vOnlineUsers7 hwndhwndListView10 Hidden, % "  Online Users"
 UserTabCount := 1, CurrentTabList := Channel1, WantNick := NickName
 GoSub, Button1
 Gui,80: Font, s10, Arial
@@ -134,12 +129,8 @@ RichEdit_SetSel(Chat1, -1, -1)
 RichEdit_SetCharFormat(Chat1, "Segoe", "s9", "0x000000", "", "Selection")
 DOTDOTDOT := 1, DotText := "Connecting"
 DOTDOTDOT("1", True)
-If (WAOY = 0 or NickName != ReadDefName){
-	Quit()
-	CONNECT(NickName, NickName, NickName, "", "irc.freenode.net", 6667)
-	ROMF("Message_Recieved")
-}
-
+CONNECT(NickName, NickName, NickName, "", "irc.freenode.net", 6667)
+ROMF("Message_Recieved")
 JOIN(Channel1)
 SetTimer, JOIN, 20000
 
@@ -182,7 +173,7 @@ Edit_Select(StartPos + StrLen(Match%ThisMatch% Append), StartPos + StrLen(Match%
 Return
 
 CancelTabbing:
-If Tabbing
+If (Tabbing)
     Tabbing--
 Else
     Matches = 0
@@ -293,7 +284,7 @@ ChatDecrypt(Data)
 {
 	StringSplit, Data, Data, %A_Space%
     i := 4
-    Data := ""
+    Data := "", Data := 
     While i <= Data0
     {   Data .= Data%i% . " "
         i++
@@ -323,12 +314,14 @@ Message_Recieved(Message)
     }
     StringSplit, Message, Message, %A_Space%
     who := SubStr(Message1, 2, InStr(Message1, "!") - 2) 
-	If (AwaitQuery) {
+	If (Message2 = 332)
+		v332 := True, HoldTopic := SubStr(Message, InStr(Message, Message5)+1)
+	Else If (AwaitQuery) {
 		RepeatWho:
 		RichEdit_SetSel(Chat%QNum%, -1,-1)
 		CurrTextLen := RichEdit_GetTextLength(Chat%QNum%)
 		If (Message2 = 311 And !Wait311)
-			RichEdit_SetText(Chat%QNum%, "==  " Message4 " [" Message6 "]`r`n", "SELECTION", -1), Wait311 := True
+			RichEdit_SetText(Chat%QNum%, "==  " Message4 " [" Message5 "@" Message6 "]`r`n", "SELECTION", -1), Wait311 := True
 		Else If (Message2 = 311 And Wait311)
 			RichEdit_SetText(Chat%QNum%, "==    RealName : " SubStr(message8, 2) " - " Message10 "`r`n", "SELECTION", -1), Wait311 := ""
 		Else If (Message2 = 312)
@@ -384,7 +377,7 @@ Message_Recieved(Message)
         NickName := Message4 . "_"
         JOIN(Channel%ChanAndOne%)
     }
-	Else If (SubStr(Message, InStr(Message, Message5)) = "Looking up your hostname..." And ServerStatus = "")
+	Else If (SubStr(Message, InStr(Message, Message5)) = "Looking up your hostname...")
 		ServerStatus := SubStr(Message1,2)
     Else If ((Message2 = "QUIT") And (Message3 = ":Ping") And (Message4 = "timeout:")){
 		If (Who = WantNick) {
@@ -446,46 +439,43 @@ Message_Recieved(Message)
 		Gui, 1: Default
     }
     Else If (Message2 = 353) Or (CollectingData) {
-		If (Message2 = 366){
-			DirMsg := 0, CollectingData := False, Data1 := SubStr(Data1, 1, StrLen(WantNick)) ", " SubStr(Data1, StrLen(WantNick) + 1)
-			If (Data1 = "")
+		If (Message2 = 366) {
+			DirMsg := 0, CollectingData := False
+			If (Trim(Users) = "")
 				RichEdit_SetText(Chat%CurrentTabNum%, "==  " WantNick ", You're all alone!`r`n", "SELECTION", -1)
 			Else {
+				Gui, 80: Default
 				Loop, %ChanCounter% {
-					Gui, 80: Default
 					GuiControlGet, ControlAH, , OnlineTab%A_Index%
 					If (ControlAH = ChosenUser){
 						Gui, 80: ListView, OnlineUsers%A_Index%
-						FoundTab := True
+						FoundTab := True, T%A_Index% := (v332) ? HoldTopic : "No Topic Set"
+						If (CurrentTabNum = A_Index)
+							WinSetTitle, LoneIRC,, % "LoneIRC - " WantNick " [" T%A_Index% "]"
 						break
 					}
 					Else If (ControlAH = SubStr(ChosenUser, 2)){
 						Gui, 80: ListView, OnlineUsers%A_Index%
-						FoundTab := True
+						FoundTab := True, T%A_Index% := (v332) ? HoldTopic : "No Topic Set"
+						If (CurrentTabNum = A_Index)
+							WinSetTitle, LoneIRC,, % "LoneIRC - " WantNick " [" T%A_Index% "]"
 						break
 					}
 				} 
 				If (FoundTab) {
-					Loop, Parse, Data1, `,%A_Space%
+					Loop, Parse, Users, %A_Space%
 					{	If (A_LoopField != "") And (A_LoopField != SubStr(NickName, 2)){
-							
 							LV_Add("", A_LoopField)
 							LV_ModifyCol(1, "AutoHdr")
-							FoundTab := False
+							FoundTab := False, Users := ""
 						}
 					}
-					Gui, 1: Default
 				}
+				Gui, 1: Default
 			}
-	
 		}
 		Else {
-			CollectingData := True, i := 6
-			Data .= SubStr(Message, InStr(Message, Message6)+1)
-			StringReplace, Data, Data, %a_space%,`,%a_space%,ALL
-			StringReplace, Data, Data, `:, `,%a_space%
-			StringReplace, Data, Data, %UserNick%`,%a_space%
-			data1 .= data, Data := ""
+			CollectingData := True, Users .= (Users = "") ? SubStr(Message, InStr(Message, Message6)+1) : " " SubStr(Message, InStr(Message, Message6)+1)
 		}
 	}
 	Else If (Message2 = 328){
@@ -617,16 +607,15 @@ Message_Recieved(Message)
 }
 
 onlineclick:
-CurrentUserNum := A_EventInfo
-PrevUserNum := A_EventInfo - 1
+CurrentUserNum := A_EventInfo, PrevUserNum := A_EventInfo - 1
 Gui, 80: ListView, OnlineUsers
 LV_GetText(SelListUser, A_EventInfo)
 ReceivedClick:
-If InStr(CurrentTabList, SelListUser)
-    Return
-If (UserTabCount = 9 OR SelListUser = NickName OR SelListUser = "Online Users") 
-    Return
-CurrentTabList .= ", " SelListUser, PreceedingTab := UserTabCount, ++ UserTabCount
+Loop, Parse, CurrentTabList, `,
+{	If (A_LoopField = SelListUser)
+		Return
+}
+CurrentTabList .= "," SelListUser, PreceedingTab := UserTabCount, ++ UserTabCount
 GuiControl, 80: Text, OnlineTab%UserTabCount%, %SelListUser%
 ButtonWide%UserTabCount% := GetTextSize(SelListUser, 12, "Arial")
 Gui, 80: Default
@@ -651,6 +640,7 @@ button5:
 button6:
 button7:
 CurrentTabNum := SubStr(A_ThisLabel, 0)
+WinSetTitle, LoneIRC,, % "LoneIRC - " WantNick " [" T%CurrentTabNum% "]"
 If (CurrentTabNum != PrevTabNum){
 	Control, Hide,,, % "ahk_id " %CurrentUserTab%
 	GuiControl, 80: Hide, OnlineUsers%PrevTabNum%
@@ -676,7 +666,7 @@ If InStr(CurrentTabList, ButtonToDelete) {
 	GuiControl, 80: Hide, %AssociatedButton%
     ChatTabRotation := UserTabCount - CurrentTabNum, OtherIndex := CurrentTabNum, OtherNum := CurrentTabNum + 1, MinNum := CurrentTabNum - 1
 	Gui, 80: Default
-	Part(Channel%CurrentTabNum%, "I've grown tired of you")
+	Part(Channel%CurrentTabNum%, "Leaving Channel")
     Loop, %ChatTabRotation% {
         GuiControlGet, OnlineTab%OtherIndex%, Pos
 		If (CurrentTabNum = 1 And OtherNum = 2)
@@ -742,13 +732,6 @@ JOIN(Channel)
 	WS2_SendData(Socket, "JOIN " . Channel . "`r`n")
     ListLines, On
 }
-PRIVMSG(Name, Message)
-{
-    ListLines, Off
-    global Socket
-    WS2_SendData(Socket, "PRIVMSG " . Name . " :" . Message . "`r`n")
-    ListLines, On
-}
 MSG(Name, Message)
 {
     ListLines, Off
@@ -781,7 +764,7 @@ PART(Channel, Reason="")
 {
     ListLines, Off
 	global Socket
-    WS2_SendData(Socket, "PART" . Channel . ((Reason != "") ? " :" . Reason : "") . "`r`n")
+    WS2_SendData(Socket, "PART " . Channel . ((Reason != "") ? " :" . Reason : "") . "`r`n")
     ListLines, On
 }
 QUIT(Reason="")
@@ -837,7 +820,7 @@ BAN(Channel, Person, UnBan=false, KickBan=false, Reason="")
 ExitSub:
 OnExit
 Loop, %UserTabCount%
-	Part(Channel%A_Index%, "Felt Like Quitting")
+	Part(Channel%A_Index%, "Quitting")
 QUIT()
 ExitApp
 
